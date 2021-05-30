@@ -63,7 +63,7 @@ with it the data has to be stored as specified in the file in the folders of Dat
  image with some additional library and setting.
 * Docs store the final report of this work, so for any doubt refer to it, you can find almost everything.
 * In Lib there are all the libraries used to perform the network's operations.
-* Once you have prepared the repo teh dataset, and the docker image you can run the main files
+* Once you have prepared the repo, the dataset, and the docker image you can run the main files.
 
 ### Prepare the Dataset
 The data employed in my work was coupled radar and optical images:
