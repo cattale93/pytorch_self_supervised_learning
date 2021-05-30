@@ -1,0 +1,102 @@
+\documentclass[border=15pt, multi, tikz]{standalone}
+\usepackage{import}
+\subimport{../../layers/}{init}
+\usetikzlibrary{positioning}
+\usetikzlibrary{3d} %for including external image
+
+\def\resnet{rgb:red,5}
+\def\tanh{rgb:blue,5}
+\def\dropout{rgb:black,5}
+\def\relu{rgb:blue,5}
+\def\DeconvColor{rgb:pink,2}
+\def\instnormcolor{rgb:green,5}
+\def\ConvColor{rgb:yellow,5;red,2;white,5}
+\def\SumColor{rgb:blue,5;green,15}
+\def\padcolor{rgb:magenta,5;black,7}
+
+
+\def\ConvReluColor{rgb:yellow,5}
+\def\PoolColor{rgb:red,1;black,0.6}
+\def\SoftmaxColor{rgb:magenta,5;black,7}
+
+\begin{document}
+\begin{tikzpicture}
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\edgecolor,opacity=0.7]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw Layer Blocks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node[canvas is zy plane at x=0] (temp) at (-2,0,0) {\includegraphics[width=7cm,height=8cm]{rgb.png}};
+
+\node[draw,align=center] at (9.5,7) {\Huge Discriminator};
+
+\pic[shift={(0,4.50)}] at (5,0,0) {Box={name=leg2, caption=Conv2d,%
+        fill=\ConvColor,opacity=0.5,height=6,width=6,depth=6}};
+\pic[shift={(0,4.50)}] at (9,0,0) {Box={name=leg3, caption=InstanceNorm2d,%
+        fill=\instnormcolor,opacity=0.5,height=6,width=6,depth=6}};
+\pic[shift={(0,4.50)}] at (13,0,0) {Box={name=leg4, caption=LeakyRelu,%
+        fill=\relu,opacity=0.5,height=6,width=6,depth=6}};
+
+
+%CONV FIRST
+\pic[shift={(1,0,0)}] at (0,0,0)  {Box={name=conv1,%
+        fill=\ConvColor,opacity=0.5,height=20,width=3,depth=20}};
+\pic[shift={(0,0,0)}] at (conv1-east) {Box={name=relu1,%
+        fill=\relu,opacity=0.5,height=20,width=2,depth=20}};
+%DESCRIPTION
+\node[draw,align=center] at (1.5,-3.6) {Input\\Conv2D\\(4X4@64 stride=2)};
+
+%CONV1
+\pic[shift={(3,0,0)}] at (relu1-east) {Box={name=conv2,%
+        fill=\ConvColor,opacity=0.5,height=10,width=4,depth=10}};
+\pic[shift={(0,0,0)}] at (conv2-east) {Box={name=instnorm1,%
+        fill=\instnormcolor,opacity=0.5,height=10,width=2,depth=10}};
+\pic[shift={(0,0,0)}] at (instnorm1-east) {Box={name=relu2,%
+        fill=\relu,opacity=0.5,height=10,width=2,depth=10}};
+%DESCRIPTION
+\node[draw,align=center] at (5.8,-2.2) {Convolutional\\Conv2D\\(4X4@128 stride=2)};
+
+%CONV2
+\pic[shift={(2.5,0,0)}] at (relu2-east) {Box={name=conv3,%
+        fill=\ConvColor,opacity=0.5,height=5,width=8,depth=5}};
+\pic[shift={(0,0,0)}] at (conv3-east) {Box={name=instnorm2,%
+        fill=\instnormcolor,opacity=0.5,height=5,width=2,depth=5}};
+\pic[shift={(0,0,0)}] at (instnorm2-east) {Box={name=relu3,%
+        fill=\relu,opacity=0.5,height=5,width=2,depth=5}};
+%DESCRIPTION
+\node[draw,align=center] at (10.3,-1.5) {Convolutional\\Conv2D\\(3x3@256 stride=2)};
+
+%CONV3
+\pic[shift={(2,0,0)}] at (relu3-east) {Box={name=conv4,%
+        fill=\ConvColor,opacity=0.5,height=4.5,width=16,depth=4.5}};
+\pic[shift={(0,0,0)}] at (conv4-east) {Box={name=instnorm3,%
+        fill=\instnormcolor,opacity=0.5,height=4.5,width=2,depth=4.5}};
+\pic[shift={(0,0,0)}] at (instnorm3-east) {Box={name=relu4,%
+        fill=\relu,opacity=0.5,height=4.5,width=2,depth=4.5}};
+%DESCRIPTION
+\node[draw,align=center] at (15.5,-1.5) {Convolutional\\Conv2D\\(4X4@512)};
+
+%CONV LAST
+\pic[shift={(1.5,0,0)}] at (relu4-east) {Box={name=conv5,%
+        fill=\ConvColor,opacity=0.5,height=4,width=2,depth=4}};
+%DESCRIPTION
+\node[draw,align=center] at (19.1,-1.5) {Convolutional\\Conv2D\\(4X4@1)};
+
+\pic[shift={(1,0,0)}] at (conv5-east) {Box={name=ph,%
+        fill=\tanh,opacity=0.5,height=5,width=0,depth=5}};
+\node[canvas is zy plane at x=0] (1,0,0) at (ph-east) {\includegraphics[width=1cm,height=1cm]{res.jpg}};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw connections
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\draw [connection]  (-2,0,0)    -- node {\midarrow} (conv1-west);
+\draw [connection]  (relu1-east)    -- node {\midarrow} (conv2-west);
+\draw [connection]  (relu2-east)    -- node {\midarrow} (conv3-west);
+\draw [connection]  (relu3-east)    -- node {\midarrow} (conv4-west);
+\draw [connection]  (relu4-east)    -- node {\midarrow} (conv5-west);
+\draw [connection]  (conv5-east)    -- node {\midarrow} (ph-west);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{tikzpicture}
+\end{document}\grid

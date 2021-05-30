@@ -1,0 +1,102 @@
+\documentclass[border=15pt, multi, tikz]{standalone}
+\usepackage{import}
+\subimport{../../layers/}{init}
+\usetikzlibrary{positioning}
+\usetikzlibrary{3d} %for including external image
+
+\def\resnet{rgb:red,5}
+\def\tanh{rgb:blue,5}
+\def\dropout{rgb:black,5}
+\def\relu{rgb:orange,5}
+\def\DeconvColor{rgb:pink,2}
+\def\instnormcolor{rgb:green,5}
+\def\ConvColor{rgb:yellow,5;red,2;white,5}
+\def\SumColor{rgb:blue,5;green,15}
+\def\padcolor{rgb:magenta,5;black,7}
+
+
+\def\ConvReluColor{rgb:yellow,5}
+\def\PoolColor{rgb:red,1;black,0.6}
+\def\SoftmaxColor{rgb:magenta,5;black,7}
+\def\black{rgb:black,1}
+
+
+\begin{document}
+\begin{tikzpicture}
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\edgecolor,opacity=0.7]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw Layer Blocks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node[canvas is zy plane at x=0] (temp) at (-2,0,0) {\includegraphics[width=7cm,height=8cm]{train_sar.png}};
+
+
+%Input
+\pic[shift={(0,0,0)}] at (0,0,0) {Box={name=input,%
+        fill=\dropout,opacity=0.5,height=40,width=5,depth=40}};
+\node[draw,align=center] at (-1.1,-6) {Input};
+
+
+%DOWN1
+\pic[shift={(1.5,0,0)}] at (input-east) {Box={name=down1,%
+        fill=\dropout,opacity=0.5,height=20,width=6,depth=20}};
+\node[draw,align=center] at (2.8,-3.2) {Downsampling1};
+
+
+%DOWN2
+\pic[shift={(1.5,0,0)}] at (down1-east) {Box={name=down2,%
+        fill=\dropout,opacity=0.5,height=10,width=8,depth=10}};
+\node[draw,align=center] at (5.7,-1.8) {Downsampling2};
+
+
+%Input
+\pic[shift={(1,0,0)}] at (down2-east) {Box={name=res,%
+        fill=\dropout,opacity=0.5,height=10,width=20,depth=10}};
+\node[draw,align=center] at (9.5,-1.8) {Residual Blocks};
+
+
+%UPSAMPLE1
+\pic[shift={(1.5,0,0)}] at (res-east) {Box={name=conv6,%
+        fill=\DeconvColor,opacity=0.5,height=20,width=3,depth=20}};
+\pic[shift={(0,0,0)}] at (conv6-east) {Box={name=instnorm6,%
+        fill=\instnormcolor,opacity=0.5,height=20,width=1,depth=20}};
+\pic[shift={(0,0,0)}] at (instnorm6-east) {Box={name=relu5,%
+        fill=\relu,opacity=0.5,height=20,width=1,depth=20}};
+\node[draw,align=center] at (12.5,-3.75) {Upsampling\\ConvTranspose2d\\(3x3@128 stride=2)};
+
+%UPSAMPLE2
+\pic[shift={(1.5,0,0)}] at (relu5-east) {Box={name=conv7,%
+        fill=\DeconvColor,opacity=0.5,height=40,width=2,depth=40}};
+\pic[shift={(0,0,0)}] at (conv7-east) {Box={name=instnorm7,%
+        fill=\instnormcolor,opacity=0.5,height=40,width=1,depth=40}};
+\pic[shift={(0,0,0)}] at (instnorm7-east) {Box={name=relu6,%
+        fill=\relu,opacity=0.5,height=40,width=1,depth=40}};
+\node[draw,align=center] at (14.4,-6.4) {Upsampling\\ConvTranspose2d\\(3x3@64 stride=2)};
+
+%OUTPUT
+\pic[shift={(1.5,0,0)}] at (relu6-east) {Box={name=pad3,%
+        fill=\padcolor,opacity=0.5,height=45,width=1,depth=45}};
+\pic[shift={(0,0,0)}] at (pad3-east) {Box={name=conv8,%
+        fill=\ConvColor,opacity=0.5,height=40,width=1,depth=40}};
+\node[draw,align=center] at (17.7,-7.1) {Output\\ReflectionPad2d(3)\\Conv2D(7x7@64)};
+
+
+\pic[shift={(2,0,0)}] at (conv8-east) {Box={name=ph,%
+        fill=\black,opacity=1,height=42.8,width=0.01,depth=38}};
+\node[canvas is zy plane at x=0] (0,0,0) at (ph-east) {\includegraphics[width=7.5cm,height=8.5cm]{label.png}};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw connections
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\draw [connection]  (input-east)    -- node {\midarrow} (down1-west);
+\draw [connection]  (down1-east)    -- node {\midarrow} (down2-west);
+\draw [connection]  (down2-east)    -- node {\midarrow} (res-west);
+\draw [connection]  (res-east)    -- node {\midarrow} (conv6-west);
+\draw [connection]  (relu5-east)    -- node {\midarrow} (conv7-west);
+\draw [connection]  (relu6-east)    -- node {\midarrow} (pad3-west);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{tikzpicture}
+\end{document}\grid

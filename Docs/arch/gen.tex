@@ -1,0 +1,324 @@
+\documentclass[border=15pt, multi, tikz]{standalone}
+\usepackage{import}
+\subimport{../../layers/}{init}
+\usetikzlibrary{positioning}
+\usetikzlibrary{3d} %for including external image
+
+\def\resnet{rgb:red,5}
+\def\tanh{rgb:blue,5}
+\def\dropout{rgb:black,5}
+\def\relu{rgb:orange,5}
+\def\DeconvColor{rgb:pink,2}
+\def\instnormcolor{rgb:green,5}
+\def\ConvColor{rgb:yellow,5;red,2;white,5}
+\def\SumColor{rgb:blue,5;green,15}
+\def\padcolor{rgb:magenta,5;black,7}
+
+
+\def\ConvReluColor{rgb:yellow,5}
+\def\PoolColor{rgb:red,1;black,0.6}
+\def\SoftmaxColor{rgb:magenta,5;black,7}
+
+\begin{document}
+\begin{tikzpicture}
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\edgecolor,opacity=0.7]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw Layer Blocks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node[canvas is zy plane at x=0] (temp) at (-2,0,0) {\includegraphics[width=7cm,height=8cm]{train_sar.png}};
+
+\pic[shift={(0,4.50)}] at (6,0,0) {Box={name=leg1, caption=ReflectionPad2d,%
+        fill=\padcolor,opacity=0.5,height=6,width=6,depth=6}};
+\pic[shift={(0,4.50)}] at (9.5,0,0) {Box={name=leg2, caption=Conv2d,%
+        fill=\ConvColor,opacity=0.5,height=6,width=6,depth=6}};
+\pic[shift={(0,4.50)}] at (13,0,0) {Box={name=leg3, caption=InstanceNorm2d,%
+        fill=\instnormcolor,opacity=0.5,height=6,width=6,depth=6}};
+\pic[shift={(0,4.50)}] at (16.5,0,0) {Box={name=leg4, caption=Relu,%
+        fill=\relu,opacity=0.5,height=6,width=6,depth=6}};
+\pic[shift={(0,4.50)}] at (20,0,0) {Box={name=leg5, caption=Dropout,%
+        fill=\dropout,opacity=0.5,height=6,width=6,depth=6}};
+\pic[shift={(0,4.50)}] at (23.5,0,0) {Box={name=leg6, caption=ResBlock,%
+        fill=\resnet,opacity=0.5,height=6,width=6,depth=6}};
+\pic[shift={(0,4.50)}] at (27,0,0) {Box={name=leg7, caption=ConvTranspose2d,%
+        fill=\DeconvColor,opacity=0.5,height=6,width=6,depth=6}};
+
+%Input
+\pic[shift={(0,0,0)}] at (0,0,0) {Box={name=pad1,%
+        fill=\padcolor,opacity=0.5,height=45,width=1,depth=45}};
+\pic[shift={(0,0,0)}] at (pad1-east) {Box={name=conv1,%
+        fill=\ConvColor,opacity=0.5,height=40,width=2,depth=40}};
+\pic[shift={(0,0,0)}] at (conv1-east) {Box={name=instnorm1,%
+        fill=\instnormcolor,opacity=0.5,height=40,width=1,depth=40}};
+\pic[shift={(0,0,0)}] at (instnorm1-east) {Box={name=relu,%
+        fill=\relu,opacity=0.5,height=40,width=1,depth=40}};
+\node[draw,align=center] at (-0.7,-7.1) {Input\\ReflectionPad2d(3)\\Conv2D(7x7@64)};
+
+%conv1
+\pic[shift={(1,0,0)}] at (relu-east) {Box={name=conv2,%
+        fill=\ConvColor,opacity=0.5,height=20,width=3,depth=20}};
+\pic[shift={(0,0,0)}] at (conv2-east) {Box={name=instnorm2,%
+        fill=\instnormcolor,opacity=0.5,height=20,width=1,depth=20}};
+\pic[shift={(0,0,0)}] at (instnorm2-east) {Box={name=relu2,%
+        fill=\relu,opacity=0.5,height=20,width=1,depth=20}};
+\node[draw,align=center] at (2,-3.8) {Downsampling\\Conv2D\\(3x3@128 stride=2)};
+
+%conv2
+\pic[shift={(1,0,0)}] at (relu2-east) {Box={name=conv3,%
+        fill=\ConvColor,opacity=0.5,height=10,width=5,depth=10}};
+\pic[shift={(0,0,0)}] at (conv3-east) {Box={name=instnorm3,%
+        fill=\instnormcolor,opacity=0.5,height=10,width=1,depth=10}};
+\pic[shift={(0,0,0)}] at (instnorm3-east) {Box={name=relu3,%
+        fill=\relu,opacity=0.5,height=10,width=1,depth=10}};
+\node[draw,align=center] at (4.5,-2.3) {Downsampling\\Conv2D\\(3x3@256 stride=2)};
+
+%RES1
+\pic[shift={(1,0,0)}] at (relu3-east) {Box={name=conv4,%
+        fill=\ConvColor,opacity=0.5,height=10,width=5,depth=10}};
+\pic[shift={(0,0,0)}] at (conv4-east) {Box={name=instnorm4,%
+        fill=\instnormcolor,opacity=0.5,height=10,width=1,depth=10}};
+\pic[shift={(0,0,0)}] at (instnorm4-east) {Box={name=relu4,%
+        fill=\relu,opacity=0.5,height=10,width=1,depth=10}};
+\pic[shift={(0,0,0)}] at (relu4-east) {Box={name=dropout1,%
+        fill=\dropout,opacity=0.5,height=10,width=1,depth=10}};
+\pic[shift={(0,0,0)}] at (dropout1-east) {Box={name=pad2,%
+        fill=\padcolor,opacity=0.5,height=10,width=1,depth=10}};
+\pic[shift={(0,0,0)}] at (pad2-east) {Box={name=conv5,%
+        fill=\ConvColor,opacity=0.5,height=10,width=5,depth=10}};
+\pic[shift={(0,0,0)}] at (conv5-east) {Box={name=instnorm5,%
+        fill=\instnormcolor,opacity=0.5,height=10,width=1,depth=10}};
+\node[draw,align=center] at (7.8,-2.51) {Residual Block\\ Conv2D(3x3@256)\\ Dropoout(0.5)\\ReflectionPad2d(1)};
+
+%PLUS
+\pic[shift={(1,0,0)}] at (instnorm5-east) {Ball={name=sum1,%
+        fill=\SumColor,opacity=0.6,%
+        radius=1.5,logo=$+$}};
+\pic[shift={(0,-4,0)}] at (dropout1-west) {Box={name=dummy1,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+\pic[shift={(0,-3.70,0)}] at (sum1-south) {Box={name=dummy21,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+
+%RES2
+\pic[shift={(0.8,0,0)}] at (sum1-east) {Box={name=resnet2,%
+        fill=\resnet,opacity=0.5,height=10,width=1,depth=10}};
+\node[draw,align=center] at (11.65,-1.8) {ResBlock};
+
+%PLUS
+\pic[shift={(1,0,0)}] at (resnet2-east) {Ball={name=sum2,%
+        fill=\SumColor,opacity=0.6,%
+        radius=1.5,logo=$+$}};
+\pic[shift={(0,-4,0)}] at (resnet2-east) {Box={name=dummy2,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+\pic[shift={(0,-3.70,0)}] at (sum2-south) {Box={name=dummy22,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+
+%RES3
+\pic[shift={(0.8,0,0)}] at (sum2-east) {Box={name=resnet3,%
+        fill=\resnet,opacity=0.5,height=10,width=1,depth=10}};
+\node[draw,align=center] at (13.95,-1.8) {ResBlock};
+
+%PLUS
+\pic[shift={(1,0,0)}] at (resnet3-east) {Ball={name=sum3,%
+        fill=\SumColor,opacity=0.6,%
+        radius=1.5,logo=$+$}};
+\pic[shift={(0,-4,0)}] at (resnet3-east) {Box={name=dummy3,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+\pic[shift={(0,-3.70,0)}] at (sum3-south) {Box={name=dummy23,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+
+%res4
+\pic[shift={(0.8,0,0)}] at (sum3-east) {Box={name=resnet4,%
+        fill=\resnet,opacity=0.5,height=10,width=1,depth=10}};
+\node[draw,align=center] at (16.25,-1.8) {ResBlock};
+
+%PLUS
+\pic[shift={(1,0,0)}] at (resnet4-east) {Ball={name=sum4,%
+        fill=\SumColor,opacity=0.6,%
+        radius=1.5,logo=$+$}};
+\pic[shift={(0,-4,0)}] at (resnet4-east) {Box={name=dummy4,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+\pic[shift={(0,-3.70,0)}] at (sum4-south) {Box={name=dummy24,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+
+%res5
+\pic[shift={(0.8,0,0)}] at (sum4-east) {Box={name=resnet5,%
+        fill=\resnet,opacity=0.5,height=10,width=1,depth=10}};
+\node[draw,align=center] at (18.55,-1.8) {ResBlock};
+
+%PLUS
+\pic[shift={(1,0,0)}] at (resnet5-east) {Ball={name=sum5,%
+        fill=\SumColor,opacity=0.6,%
+        radius=1.5,logo=$+$}};
+\pic[shift={(0,-4,0)}] at (resnet5-east) {Box={name=dummy5,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+\pic[shift={(0,-3.70,0)}] at (sum5-south) {Box={name=dummy25,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+
+%res6
+\pic[shift={(0.8,0,0)}] at (sum5-east) {Box={name=resnet6,%
+        fill=\resnet,opacity=0.5,height=10,width=1,depth=10}};
+\node[draw,align=center] at (20.85,-1.8) {ResBlock};
+
+%PLUS
+\pic[shift={(1,0,0)}] at (resnet6-east) {Ball={name=sum6,%
+        fill=\SumColor,opacity=0.6,%
+        radius=1.5,logo=$+$}};
+\pic[shift={(0,-4,0)}] at (resnet6-east) {Box={name=dummy6,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+\pic[shift={(0,-3.70,0)}] at (sum6-south) {Box={name=dummy26,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+
+%res7
+\pic[shift={(0.8,0,0)}] at (sum6-east) {Box={name=resnet7,%
+        fill=\resnet,opacity=0.5,height=10,width=1,depth=10}};
+\node[draw,align=center] at (23.2,-1.8) {ResBlock};
+
+%PLUS
+\pic[shift={(1,0,0)}] at (resnet7-east) {Ball={name=sum7,%
+        fill=\SumColor,opacity=0.6,%
+        radius=1.5,logo=$+$}};
+\pic[shift={(0,-4,0)}] at (resnet7-east) {Box={name=dummy7,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+\pic[shift={(0,-3.70,0)}] at (sum7-south) {Box={name=dummy27,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+
+%res8
+\pic[shift={(0.8,0,0)}] at (sum7-east) {Box={name=resnet8,%
+        fill=\resnet,opacity=0.5,height=10,width=1,depth=10}};
+\node[draw,align=center] at (25.5,-1.8) {ResBlock};
+
+%PLUS
+\pic[shift={(1,0,0)}] at (resnet8-east) {Ball={name=sum8,%
+        fill=\SumColor,opacity=0.6,%
+        radius=1.5,logo=$+$}};
+\pic[shift={(0,-4,0)}] at (resnet8-east) {Box={name=dummy8,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+\pic[shift={(0,-3.70,0)}] at (sum8-south) {Box={name=dummy28,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+
+
+%res9
+\pic[shift={(0.8,0,0)}] at (sum8-east) {Box={name=resnet9,%
+        fill=\resnet,opacity=0.5,height=10,width=1,depth=10}};
+\node[draw,align=center] at (27.75,-1.8) {ResBlock};
+
+%PLUS
+\pic[shift={(1,0,0)}] at (resnet9-east) {Ball={name=sum9,%
+        fill=\SumColor,opacity=0.6,%
+        radius=1.5,logo=$+$}};
+\pic[shift={(0,-4,0)}] at (resnet9-east) {Box={name=dummy9,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+\pic[shift={(0,-3.70,0)}] at (sum9-south) {Box={name=dummy29,%
+        fill=\instnormcolor,opacity=0.5,height=0,width=0,depth=0}};
+
+%UPSAMPLE1
+\pic[shift={(1.5,0,0)}] at (sum9-east) {Box={name=conv6,%
+        fill=\DeconvColor,opacity=0.5,height=20,width=3,depth=20}};
+\pic[shift={(0,0,0)}] at (conv6-east) {Box={name=instnorm6,%
+        fill=\instnormcolor,opacity=0.5,height=20,width=1,depth=20}};
+\pic[shift={(0,0,0)}] at (instnorm6-east) {Box={name=relu5,%
+        fill=\relu,opacity=0.5,height=20,width=1,depth=20}};
+\node[draw,align=center] at (29.95,-3.75) {Upsampling\\ConvTranspose2d\\(3x3@128 stride=2)};
+
+%UPSAMPLE2
+\pic[shift={(1.5,0,0)}] at (relu5-east) {Box={name=conv7,%
+        fill=\DeconvColor,opacity=0.5,height=40,width=2,depth=40}};
+\pic[shift={(0,0,0)}] at (conv7-east) {Box={name=instnorm7,%
+        fill=\instnormcolor,opacity=0.5,height=40,width=1,depth=40}};
+\pic[shift={(0,0,0)}] at (instnorm7-east) {Box={name=relu6,%
+        fill=\relu,opacity=0.5,height=40,width=1,depth=40}};
+\node[draw,align=center] at (31.7,-6.4) {Upsampling\\ConvTranspose2d\\(3x3@64 stride=2)};
+
+%OUTPUT
+\pic[shift={(1.5,0,0)}] at (relu6-east) {Box={name=pad3,%
+        fill=\padcolor,opacity=0.5,height=45,width=1,depth=45}};
+\pic[shift={(0,0,0)}] at (pad3-east) {Box={name=conv8,%
+        fill=\ConvColor,opacity=0.5,height=40,width=1,depth=40}};
+\pic[shift={(0,0,0)}] at (conv8-east) {Box={name=tanh,%
+        fill=\ConvColor,opacity=0.5,height=40,width=1,depth=40}};
+\node[draw,align=center] at (36.4,-7.3) {Output\\ReflectionPad2d(3)\\Conv2D(7x7@N of Optical channels)\\Conv2D(1x1@N of Optical channels)};
+
+
+\pic[shift={(2,0,0)}] at (conv8-east) {Box={name=ph,%
+        fill=\tanh,opacity=0.5,height=5,width=0,depth=5}};
+\node[canvas is zy plane at x=0] (1,0,0) at (ph-east) {\includegraphics[width=7.5cm,height=8.5cm]{train.png}};
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw connections
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\draw [connection]  (relu-east)    -- node {\midarrow} (conv2-west);
+\draw [connection]  (relu2-east)    -- node {\midarrow} (conv3-west);
+\draw [connection]  (relu3-east)    -- node {\midarrow} (conv4-west);
+\draw [connection]  (instnorm5-east)    -- node {\midarrow} (sum1-west);
+
+\draw [connection]  (instnorm5-east)  -- node {\midarrow} (sum1-west);
+\draw [connection]  (resnet2-east)    -- node {\midarrow} (sum2-west);
+\draw [connection]  (resnet3-east)    -- node {\midarrow} (sum3-west);
+\draw [connection]  (resnet4-east)    -- node {\midarrow} (sum4-west);
+\draw [connection]  (resnet5-east)    -- node {\midarrow} (sum5-west);
+\draw [connection]  (resnet6-east)    -- node {\midarrow} (sum6-west);
+\draw [connection]  (resnet7-east)    -- node {\midarrow} (sum7-west);
+\draw [connection]  (resnet8-east)    -- node {\midarrow} (sum8-west);
+\draw [connection]  (resnet9-east)    -- node {\midarrow} (sum9-west);
+
+\draw [connection]  (sum1-east)    -- (resnet2-west);
+\draw [connection]  (sum2-east)    -- (resnet3-west);
+\draw [connection]  (sum3-east)    -- (resnet4-west);
+\draw [connection]  (sum4-east)    -- (resnet5-west);
+\draw [connection]  (sum5-east)    -- (resnet6-west);
+\draw [connection]  (sum6-east)    -- (resnet7-west);
+\draw [connection]  (sum7-east)    -- (resnet8-west);
+\draw [connection]  (sum8-east)    -- (resnet9-west);
+\draw [connection]  (sum9-east)    -- node {\midarrow} (conv6-west);
+
+
+\path (relu3-east) -- (conv4-west) coordinate[pos=0.25] (between1) ;
+\path (resnet2-east) -- (sum1-west) coordinate[pos=0.6] (between2) ;
+\path (resnet3-east) -- (sum2-west) coordinate[pos=0.6] (between3) ;
+\path (resnet4-east) -- (sum3-west) coordinate[pos=0.6] (between4) ;
+\path (resnet5-east) -- (sum4-west) coordinate[pos=0.6] (between5) ;
+\path (resnet6-east) -- (sum5-west) coordinate[pos=0.6] (between6) ;
+\path (resnet7-east) -- (sum6-west) coordinate[pos=0.6] (between7) ;
+\path (resnet8-east) -- (sum7-west) coordinate[pos=0.6] (between8) ;
+\path (resnet9-east) -- (sum8-west) coordinate[pos=0.6] (between9) ;
+
+\draw [connection]  (between1)    -- (dummy1-west-|between1) -- (dummy1-west);
+\draw [connection]  (between2)    -- (dummy2-west-|between2) -- (dummy2-west);
+\draw [connection]  (between3)    -- (dummy3-west-|between3) -- (dummy3-west);
+\draw [connection]  (between4)    -- (dummy4-west-|between4) -- (dummy4-west);
+\draw [connection]  (between5)    -- (dummy5-west-|between5) -- (dummy5-west);
+\draw [connection]  (between6)    -- (dummy6-west-|between6) -- (dummy6-west);
+\draw [connection]  (between7)    -- (dummy7-west-|between7) -- (dummy7-west);
+\draw [connection]  (between8)    -- (dummy8-west-|between8) -- (dummy8-west);
+\draw [connection]  (between9)    -- (dummy9-west-|between9) -- (dummy9-west);
+
+
+\draw [connection]  (dummy1-east)    --  (dummy21-west);
+\draw [connection]  (dummy2-east)    --  (dummy22-west);
+\draw [connection]  (dummy3-east)    --  (dummy23-west);
+\draw [connection]  (dummy4-east)    --  (dummy24-west);
+\draw [connection]  (dummy5-east)    --  (dummy25-west);
+\draw [connection]  (dummy6-east)    --  (dummy26-west);
+\draw [connection]  (dummy7-east)    --  (dummy27-west);
+\draw [connection]  (dummy8-east)    --  (dummy28-west);
+\draw [connection]  (dummy9-east)    --  (dummy29-west);
+
+\draw [connection]  (dummy21-east)    -- node {\midarrow} (sum1-south);
+\draw [connection]  (dummy22-east)    -- node {\midarrow} (sum2-south);
+\draw [connection]  (dummy23-east)    -- node {\midarrow} (sum3-south);
+\draw [connection]  (dummy24-east)    -- node {\midarrow} (sum4-south);
+\draw [connection]  (dummy25-east)    -- node {\midarrow} (sum5-south);
+\draw [connection]  (dummy26-east)    -- node {\midarrow} (sum6-south);
+\draw [connection]  (dummy27-east)    -- node {\midarrow} (sum7-south);
+\draw [connection]  (dummy28-east)    -- node {\midarrow} (sum8-south);
+\draw [connection]  (dummy29-east)    -- node {\midarrow} (sum9-south);
+
+\draw [connection]  (relu5-east)    -- node {\midarrow} (conv7-west);
+\draw [connection]  (relu6-east)    -- node {\midarrow} (pad3-west);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{tikzpicture}
+\end{document}\grid
