@@ -1,15 +1,11 @@
 # Self-Supervised Learning for Semantic Segmentation of Pol-SAR Images via SAR-to-Optical Transcoding Using Pytorch
 
-* This framework has been developed during my master thesis for the master degree in Information and Communication
- Engineering [@UniTN](https://www.unitn.it/ "UniTN website") -
- [Course Description](https://offertaformativa.unitn.it/en/lm/information-and-communications-engineering "Course website")
-* If you want to discover every detail about the choices motivations and experiments you can check my
- [Final Dissertation](Docs/manuscript/manuscript.pdf "Final Dissertation")
- out.
-* Instead, for a brief overview you can check out my [Final Presentation](Docs/manuscript/manuscript.pdf "Final Presentation").
-* Here below I will explain how you reuse the code or repeat the experiments performed.
-* Please you find this work helpful or interesting just drop a comment and let me now, if you have problem or
- curiosities do not hesitate to contact me.
+* This framework was developed during my Master's thesis for the degree in Information and Communication Engineering at [@UniTN](https://www.unitn.it/ "UniTN website") - [Course Description](https://offertaformativa.unitn.it/en/lm/information-and-communications-engineering "Course website").
+* For an in-depth look at the motivations, design choices, and experiments, you can check out my [Final Dissertation](Docs/manuscript/manuscript.pdf "Final Dissertation").
+* For a brief overview, please refer to my [Final Presentation](Docs/manuscript/manuscript.pdf "Final Presentation").
+* This research was published in the proceedings of an international conference: [Transcoding-based pre-training of semantic segmentation networks for PolSAR images](https://ieeexplore.ieee.org/document/9944362) (EUSAR 2022).
+* Below, I explain how to reuse the code or replicate the experiments performed.
+* If you find this work helpful or interesting, please leave a comment and let me know! If you have any questions or curiosities, do not hesitate to contact me.
 
 ## Visual Results
 ### Transcoding Results
